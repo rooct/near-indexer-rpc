@@ -1379,7 +1379,7 @@ dependencies = [
 
 [[package]]
 name = "near-indexer-rpc"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "near-jsonrpc-client",

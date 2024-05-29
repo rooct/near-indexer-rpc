@@ -1,6 +1,6 @@
 [package]
 name = "near-indexer-rpc"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Rooct welling1234@gmail.com"]
 description = "A Rust library for interacting with the NEAR Indexer and RPC."
