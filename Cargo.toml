@@ -12,3 +12,10 @@ near-primitives = "0.20.1"
 anyhow = { version = "1.0.79", features = ["backtrace"] }
 tokio = { version = "1.35.1", features = ["full"] }
 near-jsonrpc-primitives = "0.20.1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+debug = false
+codegen-units = 1
+panic = 'abort'
