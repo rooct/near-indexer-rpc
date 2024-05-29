@@ -12,19 +12,20 @@ use tokio::{
     time::{sleep, Duration},
 };
 
-pub async fn get_outcome(
+pub async fn get_logs(
     client: &JsonRpcClient,
     chunk_header: ChunkHeaderView,
     account_ids: Vec<AccountId>,
-) -> anyhow::Result<Vec<String>> {
-    let txs = get_tx_receipt(&client, chunk_header.chunk_hash).await?;
+) -> anyhow::Result<Vec<(CryptoHash, String)>> {
+    let txs = get_transactions(&client, chunk_header.chunk_hash).await?;
     let mut logs = Vec::new();
     for tx in txs {
-        if account_ids.contains(&tx.receiver_id) {
-            let outcomes = get_tx_outcome(&client, tx.hash, tx.signer_id).await?;
-            for oc in outcomes {
-                for log in oc.outcome.logs.iter() {
-                    logs.push(log.to_string());
+        let outcomes = get_receipt(&client, tx.hash, tx.signer_id).await?;
+        for oc in outcomes {
+            let outcome = oc.outcome;
+            if account_ids.contains(&outcome.executor_id) {
+                for log in outcome.logs.iter() {
+                    logs.push((tx.hash, log.to_string()));
                 }
             }
         }
@@ -32,7 +33,8 @@ pub async fn get_outcome(
 
     Ok(logs)
 }
-pub async fn get_tx_outcome(
+
+pub async fn get_receipt(
     client: &JsonRpcClient,
     tx_hash: CryptoHash,
     sender_account_id: AccountId,
@@ -48,7 +50,7 @@ pub async fn get_tx_outcome(
         .receipts_outcome)
 }
 
-pub async fn get_tx_receipt(
+pub async fn get_transactions(
     client: &JsonRpcClient,
     chunk_id: CryptoHash,
 ) -> anyhow::Result<Vec<SignedTransactionView>> {
@@ -62,14 +64,14 @@ pub async fn get_tx_receipt(
         .transactions)
 }
 
-pub async fn get_status(client: &JsonRpcClient) -> anyhow::Result<StatusSyncInfo> {
+pub async fn get_chain_info(client: &JsonRpcClient) -> anyhow::Result<StatusSyncInfo> {
     Ok(client
         .call(methods::status::RpcStatusRequest)
         .await?
         .sync_info)
 }
 
-pub async fn get_block_view(client: &JsonRpcClient, height: u64) -> anyhow::Result<BlockView> {
+pub async fn get_block(client: &JsonRpcClient, height: u64) -> anyhow::Result<BlockView> {
     Ok(client
         .call(methods::block::RpcBlockRequest {
             block_reference: near_primitives::types::BlockReference::BlockId(
@@ -115,7 +117,7 @@ pub fn fetch_blocks_from(
 async fn get_block_with_retries(client: &JsonRpcClient, height: u64) -> anyhow::Result<BlockView> {
     let mut errors = 0;
     loop {
-        match get_block_view(client, height).await {
+        match get_block(client, height).await {
             Ok(block) => return Ok(block),
             Err(err) => {
                 if cfg!(test) {
