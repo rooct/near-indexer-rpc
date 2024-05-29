@@ -2,6 +2,12 @@
 name = "near-indexer-rpc"
 version = "0.1.0"
 edition = "2021"
+authors = ["Rooct welling1234@gmail.com"]
+description = "A Rust library for interacting with the NEAR Indexer and RPC."
+license = "MIT"
+repository = "https://github.com/rooct/near-indexer-rpc.git"
+homepage = "https://github.com/rooct/near-indexer-rpc.git"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
